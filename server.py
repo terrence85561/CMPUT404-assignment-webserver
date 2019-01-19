@@ -1,5 +1,7 @@
 #  coding: utf-8 
 import socketserver
+import os
+import re
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
 # 
@@ -30,9 +32,124 @@ import socketserver
 class MyWebServer(socketserver.BaseRequestHandler):
     
     def handle(self):
+        # For stream services, self.request is a socket object
         self.data = self.request.recv(1024).strip()
-        print ("Got a request of: %s\n" % self.data)
-        self.request.sendall(bytearray("OK",'utf-8'))
+
+        # if receive an empty string
+        if not self.data:
+            return
+        
+        print ("Got a request of: %s\n" % self.data.decode('utf-8'))
+
+        request_string = self.data.decode('utf-8')
+        # get the request method
+        method = request_string.split()[0]
+        
+        # only consider GET method
+        if method == 'GET':
+            path = request_string.split()[1]
+            print('path is',path)
+            is_forbidden = re.search(r'\/etc\/|\/group\/',path)
+            if is_forbidden != None:
+                f = open('./www/notfound.html','r')
+                header = "HTTP/1.1 404 Not Found\r\n\r\n"
+                content = f.read()
+                data = header + content
+                self.request.sendall(data.encode('utf-8'))
+                f.close()
+                return
+            
+            
+            try:
+                # it is in root dir
+                if path == "/":
+                    filepath = "./www" + "/index.html"
+                    f = open(filepath,'r')
+                    content = f.read()
+                    header = "HTTP/1.1 200 OK\r\nContent-Type:text/{}\r\n\r\n".format("html")
+                    data = header + content
+                    self.request.sendall(data.encode('utf-8'))
+                    f.close()
+                
+                # it is not root dir
+                else:
+                    filepath = "./www" + path
+                    
+                    reDirect_bool = self.reDirect(path)
+                    if reDirect_bool:
+                        # need reDirect_bool,so that it is a dir
+                        newPath = path + "/index.html"
+                        header = "HTTP/1.1 301 Moved Permanently\r\nLocation: {}\r\n\r\n".format(newPath)
+                        self.request.sendall(header.encode('utf-8'))
+                    
+                    else:
+                        # dir or file
+                        is_file = self.isFile(path)
+                        if is_file:
+                            suffix = filepath.split('.')[-1]
+                            #print(filepath)
+                            f = open(filepath,'r')
+                            content = f.read()
+                            header = 'HTTP/1.1 200 OK\r\nContent-Type:text/{}\r\n\r\n'.format(suffix)
+                            data = header + content
+                            self.request.sendall(data.encode('utf-8'))
+                            f.close()
+                        else:
+                            newPath = filepath + "index.html"
+                            f = open(newPath,'r')
+                            content = f.read()
+                            header = 'HTTP/1.1 200 OK\r\nContent-Type:text/{}\r\n\r\n'.format("html")
+                            data = header + content
+                            self.request.sendall(data.encode('utf-8'))
+                            f.close()
+        
+            except:
+                header = "HTTP/1.1 404 NOT FOUND\r\n\r\n"
+                filepath = "./www/notfound.html"
+                f = open(filepath,'r')
+                content = f.read()
+                self.request.sendall(header.encode('utf-8'))
+                for i in range(len(content)):
+                    self.request.sendall(content[i].encode('utf-8')) 
+                f.close()               
+        else:
+            header = "HTTP/1.1 405 Method Not Allowed\r\n\r\n"
+            self.request.sendall(header.encode('utf-8'))
+    def reDirect(self,path):
+        end_with_slash = re.search(r'\/$',path) # end as / 
+        is_file = re.search(r'\.',path) # has file in path
+        if end_with_slash != None and is_file == None:
+            print('has slash,no file')
+            # end with slash and is not linked to a file. it is not going to be re-directed
+            return False
+        elif end_with_slash != None and is_file != None:
+            print('has slash has file')
+            raise Exception
+        
+        elif end_with_slash == None and is_file != None:
+            print('no slash has file')
+            return False
+        
+        elif end_with_slash == None:
+            print('redirect')
+            return True
+            
+             
+
+    def isFile(self,path):
+        is_file = re.search(r'\.',path)
+        if is_file != None:
+            print('is file')
+            return True
+        else:
+            print('is not file')
+            return False
+
+
+
+            
+        
+        #self.request.sendall(bytearray("OK",'utf-8'))
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
