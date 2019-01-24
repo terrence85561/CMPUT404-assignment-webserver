@@ -47,20 +47,17 @@ class MyWebServer(socketserver.BaseRequestHandler):
         
         # only consider GET method
         if method == 'GET':
-            path = request_string.split()[1]
-            #print('path is',path)
-            # is_forbidden = re.search(r'\/etc\/|\/group\/',path)
-            # if is_forbidden != None:
-            #     self.sendNotFound()
-            #     return
-            if self.is_forbidden(path):
+            request_path = request_string.split()[1]
+            if self.is_forbidden(request_path):
                 self.sendNotFound()
                 return
             
-            
+            path = os.path.realpath(request_path)  
+            #print('the real path is ',path)          
             try:
                 # it is in root dir
                 if path == "/":
+                    #print('it is a root')
                     filepath = "./www" + "/index.html"
                     self.sendOk(filepath)
                 
@@ -162,13 +159,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
             return False
         else:
             return True
-
-
-
-        
-
-            
-        
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
