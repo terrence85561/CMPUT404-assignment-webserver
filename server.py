@@ -52,7 +52,8 @@ class MyWebServer(socketserver.BaseRequestHandler):
                 self.sendNotFound()
                 return
             
-            path = os.path.realpath(request_path)  
+            #path = os.path.realpath(request_path)  
+            path = request_path
             #print('the real path is ',path)          
             try:
                 # it is in root dir
@@ -68,7 +69,9 @@ class MyWebServer(socketserver.BaseRequestHandler):
                     reDirect_bool = self.reDirect(path)
                     if reDirect_bool:
                         # need reDirect_bool,so that it is a dir
-                        newPath = path + "/index.html"
+                        #newPath = path + "/index.html"
+                        newPath = path + "/"
+
                         self.sendReDirect(newPath)
                     
                     else:
@@ -94,26 +97,26 @@ class MyWebServer(socketserver.BaseRequestHandler):
         #is_file = re.search(r'\.',path) # has file in path
         is_file = self.isFile(path)
         if end_with_slash != None and not is_file:
-            #print('has slash,no file')
+            print('has slash,no file')
             # end with slash and is not linked to a file. it is not going to be re-directed
             return False
         elif end_with_slash != None and is_file:
-            #print('has slash has file')
+            print('has slash has file')
             raise Exception
         
         elif end_with_slash == None and is_file:
-            #print('no slash has file')
+            print('no slash has file')
             return False
         
         elif end_with_slash == None:
-            #print('redirect')
+            print('redirect')
             return True
             
              
     def isFile(self,path):
         last_term = path.split('/')[-1]
         #print("last term is ",last_term)
-        is_file = re.search(r'\.',last_term)
+        is_file = re.search(r'\.[a-zA-Z]',last_term)
         if is_file != None:
             #print('is file')
             return True
