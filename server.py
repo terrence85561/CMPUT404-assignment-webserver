@@ -97,19 +97,19 @@ class MyWebServer(socketserver.BaseRequestHandler):
         #is_file = re.search(r'\.',path) # has file in path
         is_file = self.isFile(path)
         if end_with_slash != None and not is_file:
-            print('has slash,no file')
+            #print('has slash,no file')
             # end with slash and is not linked to a file. it is not going to be re-directed
             return False
         elif end_with_slash != None and is_file:
-            print('has slash has file')
+            #print('has slash has file')
             raise Exception
         
         elif end_with_slash == None and is_file:
-            print('no slash has file')
+            #print('no slash has file')
             return False
         
         elif end_with_slash == None:
-            print('redirect')
+            #print('redirect')
             return True
             
              
