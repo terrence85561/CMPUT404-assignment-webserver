@@ -47,14 +47,11 @@ class MyWebServer(socketserver.BaseRequestHandler):
         
         # only consider GET method
         if method == 'GET':
-            request_path = request_string.split()[1]
-            if self.is_forbidden(request_path):
+            path = request_string.split()[1]
+            if self.is_forbidden(path):
                 self.sendNotFound()
                 return
             
-            #path = os.path.realpath(request_path)  
-            path = request_path
-            #print('the real path is ',path)          
             try:
                 # it is in root dir
                 if path == "/":
@@ -69,7 +66,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
                     reDirect_bool = self.reDirect(path)
                     if reDirect_bool:
                         # need reDirect_bool,so that it is a dir
-                        #newPath = path + "/index.html"
                         newPath = path + "/"
 
                         self.sendReDirect(newPath)
@@ -84,8 +80,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
                             self.sendOk(newPath)
         
             except:
-                # print(e)
-                # print('yoyoyo')
                 self.sendNotFound()               
         
         else:
@@ -115,13 +109,10 @@ class MyWebServer(socketserver.BaseRequestHandler):
              
     def isFile(self,path):
         last_term = path.split('/')[-1]
-        #print("last term is ",last_term)
         is_file = re.search(r'\.[a-zA-Z]',last_term)
         if is_file != None:
-            #print('is file')
             return True
         else:
-            #print('is not file')
             return False
 
     
@@ -137,7 +128,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
     def sendOk(self,filepath):
         suffix = filepath.split('.')[-1]
         f = open(filepath,'r')
-        #print('filepath is ',filepath)
 
         content = f.read()
         header = 'HTTP/1.1 200 OK\r\nContent-Type:text/{}\r\n\r\n'.format(suffix)
@@ -155,8 +145,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
         cur_dir = os.getcwd()
         permitted_prefix = cur_dir + '/www'
         current_path = cur_dir + '/www' +  path
-        #print('current path is ',current_path)
-        #print('realpath',os.path.realpath(current_path))
         common_prefix = os.path.commonprefix([os.path.realpath(current_path),permitted_prefix])
         if common_prefix == permitted_prefix:
             return False
