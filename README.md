@@ -3,7 +3,7 @@ CMPUT404-assignment-webserver
 
 CMPUT404-assignment-webserver
 
-See requirements.org (plain-text) for a description of the project.
+See requirements.org (plain-text ) for a description of the project.
 
 Make a simple webserver.
 
@@ -16,7 +16,7 @@ server.py contains contributions from:
 
 * Abram Hindle
 * Eddie Antonio Santos
-* Jackson Z Chang
+* Jackson Z Chang 
 
 But the server.py example is derived from the python documentation
 examples thus some of the code is Copyright © 2001-2013 Python
